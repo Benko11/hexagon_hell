@@ -13,6 +13,13 @@ public class Hexagon extends Canvas {
     private GraphicsContext gc;
     private Vector vector;
 
+    /**
+     *
+     * @param initX  upper left point X coordinate
+     * @param initY  upper left point Y coordinate
+     * @param gc     the canvas context
+     * @param vector identifying coordinates
+     */
     public Hexagon(double initX, double initY, GraphicsContext gc, Vector vector) {
         this.initX = initX;
         this.initY = initY;
@@ -20,6 +27,10 @@ public class Hexagon extends Canvas {
         this.vector = vector;
     }
 
+    /**
+     * Draws a hexagon to the canvas and returns a polygon with identical boundaries used later on for event listeners.
+     * @return polygon points for the canvas hexagon
+     */
     public Polygon draw() {
         var x = new double[6];
         x[0] = initX;
@@ -49,15 +60,29 @@ public class Hexagon extends Canvas {
         return p;
     }
 
+    /**
+     * Getter method for the vector (considered constant).
+     * @return vector
+     */
     public Vector getVector() {
         return vector;
     }
 
+    /**
+     * Used for debugging.
+     * @return String representation of the object
+     */
     @Override
     public String toString() {
         return "Hexagon("+ initX +", "+initY +", Vector("+getVector().getX() +", "+getVector().getY()+"))";
     }
 
+    /**
+     * Filters a hexagon from the list of hexagons by a vector.
+     * @param hexagons The list of all hexagons
+     * @param vector   The identifying vector
+     * @return         Hexagon found by the vector or null.
+     */
     public static Hexagon findByVector(ArrayList<Hexagon> hexagons, Vector vector) {
         for (var hexagon: hexagons) {
             if (hexagon.getVector().getX() == vector.getX() && hexagon.getVector().getY() == vector.getY()) {

@@ -7,13 +7,22 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Polygon;
 import javafx.stage.Stage;
 
+/**
+ * Main Menu screen, where user can select the type and size of the field they want to play on.
+ */
 public class MainMenu {
+    /**
+     * Renders the main menu screen for the user, is called from Index
+     * @param stage Stage used for potential redrawing.
+     * @return      The scene for the stage for the pane.
+     */
     public Scene render(Stage stage) {
         var pane = new Pane();
 
-        var title = new Label("Hexagon Hell");
+        var title = new Label(ENV.APP_NAME);
         title.setStyle("-fx-font-size: 4em; -fx-text-fill: rgb(255, 0, 0); -fx-font-family: \"SF Mono\", monospace"); // why no rem support? :(
         title.relocate(40, 40);
 
@@ -47,6 +56,7 @@ public class MainMenu {
         smallHexSq.setOnAction(e -> stage.setScene(new SquareField(6).render(stage)));
         medHexSq.setOnAction(e -> stage.setScene(new SquareField(10).render(stage)));
         largeHexSq.setOnAction(e -> stage.setScene(new SquareField(14).render(stage)));
+
 
         pane.getChildren().setAll(title, desc, smallHexBtn, medHexBtn, largeHexBtn, smallHexSq, medHexSq, largeHexSq);
 

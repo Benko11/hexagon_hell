@@ -5,7 +5,16 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.paint.Color;
 
+/**
+ * Wrapper class around the default buttons with added default styling and ease of use features.
+ */
 public class CustomButton extends Button {
+    /**
+     * Creates a button that is ready to be displayed in the pane.
+     * @param label Text displayed in the button
+     * @param posX  X coordinate of the button
+     * @param posY  Y coordinate of the button
+     */
     public CustomButton(String label, int posX, int posY) {
         super();
 

@@ -189,13 +189,7 @@ abstract public class Field {
         var relevantHexagon = getAdjacentHexagons(hexagon).get(newState - 1);
         var relevantHexagonIndex = hexagons.indexOf(relevantHexagon);
 
-        // trivial case
-        if (Math.abs(prev.getState() - p.getState()) == 3 || relevantHexagon == null || player1Turn && player1Corruption.contains(relevantHexagonIndex) || !player1Turn && player2Corruption.contains(relevantHexagonIndex)) {
-            return;
-        }
-
-        handleCorruption(polygons.get(relevantHexagonIndex), polygons.get(corruptedIndex));
-
+        // backwards direction
         var backwardsIndex = ((newState + 3) - 1) % 6;
         var backwardsHexagon = getAdjacentHexagons(hexagon).get(backwardsIndex);
         if (backwardsHexagon == null) return;
@@ -204,6 +198,14 @@ abstract public class Field {
         if (polygons.get(polygonBackwardsIndex).getState() == polygons.get(polygonIndex).getState()) {
             handleCorruption(polygons.get(polygonBackwardsIndex), polygons.get(polygonIndex));
         }
+
+        // trivial case
+        if (Math.abs(prev.getState() - p.getState()) == 3 || relevantHexagon == null || player1Turn && player1Corruption.contains(relevantHexagonIndex) || !player1Turn && player2Corruption.contains(relevantHexagonIndex)) {
+            return;
+        }
+        handleCorruption(polygons.get(relevantHexagonIndex), polygons.get(corruptedIndex));
+
+
     }
 
     /**

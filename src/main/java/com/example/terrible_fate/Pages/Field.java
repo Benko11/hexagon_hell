@@ -42,6 +42,10 @@ abstract public class Field {
     protected ArrayList<Integer> stages;
     // standard pane
     protected Pane pane;
+    // label for player 1 score
+    protected CustomLabel player1Score;
+    // label for player 2 score
+    protected CustomLabel player2Score;
 
     /**
      * Standard constructor accepting only the side length for a given field, AI is automatically false
@@ -197,20 +201,32 @@ abstract public class Field {
         return new Random().nextInt(6) + 1;
     }
 
-    protected void AITurn(Stage stage, CustomLabel player1Score, CustomLabel player2Score) {
+    protected void AITurn(Stage stage) {
         if (player1Turn) return;
 
         var randomFieldIndex = player2Corruption.get(new Random().nextInt(player2Corruption.size()));
 
-        pane.getChildren().remove(polygons.get(randomFieldIndex).getLine());
+        makeTurn(stage, polygons.get(randomFieldIndex));
+    }
 
-        polygons.get(randomFieldIndex).updateState();
-        polygons.get(randomFieldIndex).rotateLine();
-        handleCorruption(polygons.get(randomFieldIndex), null);
+    protected void makeTurn(Stage stage, ReactivePolygon p) {
+        // remove the old line to replace with the new one
+        pane.getChildren().remove(p.getLine());
 
-        pane.getChildren().add(polygons.get(randomFieldIndex).getLine());
+        // update the state and rotate the line accordingly
+        p.updateState();
+        p.rotateLine();
+
+        handleCorruption(p, null);
 
         updateTurn();
+
+        // redraw the line back
+        pane.getChildren().add(p.getLine());
+
+        // update corruption scores
+        player1Score.setText(updateScore(true));
+        player2Score.setText(updateScore(false));
 
         // check to see if game should end
         if ((double) player1Corruption.size() / getFieldSize() >= ENV.VICTORY) {
@@ -219,7 +235,5 @@ abstract public class Field {
             stage.setScene(new EndGame(false).render(stage));
         }
 
-        player1Score.setText(updateScore(true));
-        player2Score.setText(updateScore(false));
     }
 }

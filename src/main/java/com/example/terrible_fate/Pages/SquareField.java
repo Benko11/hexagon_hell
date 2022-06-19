@@ -154,9 +154,6 @@ public class SquareField extends Field {
      * @return      The scene for the stage for the pane.
      */
     public Scene render(Stage stage) {
-        System.out.println(AIMode);
-        var pane = new Pane(canvas);
-
         var exitBtn = new CustomButton("Exit", 680, 550, 100, 30);
         exitBtn.setOnAction(e -> stage.setScene(new MainMenu().render(stage)));
         pane.getChildren().add(exitBtn);
@@ -174,8 +171,8 @@ public class SquareField extends Field {
         var scene = new Scene(pane, ENV.WIDTH, ENV.HEIGHT);
         initField(50, 30);
 
-        var player1Score = new CustomLabel(Math.round(1.0 / getFieldSize() * 100) + "%", ENV.PLAYER1_COLOUR, ENV.WIDTH - 80, 20);
-        var player2Score = new CustomLabel(Math.round(1.0 / getFieldSize() * 100) + "%", ENV.PLAYER2_COLOUR, ENV.WIDTH - 80, 40);
+        player1Score = new CustomLabel(Math.round(1.0 / getFieldSize() * 100) + "%", ENV.PLAYER1_COLOUR, ENV.WIDTH - 80, 20);
+        player2Score = new CustomLabel(Math.round(1.0 / getFieldSize() * 100) + "%", ENV.PLAYER2_COLOUR, ENV.WIDTH - 80, 40);
 
         pane.getChildren().add(player1Score);
         pane.getChildren().add(player2Score);
@@ -211,29 +208,11 @@ public class SquareField extends Field {
                 if (!player1Turn && !player2Corruption.contains(polygonIndex)) return;
 
                 Platform.runLater(() -> {
-                    // remove the old line to replace with the new one
-                    pane.getChildren().remove(p.getLine());
+                    makeTurn(stage, p);
 
-                    // update the state and rotate the line accordingly
-                    p.updateState();
-                    p.rotateLine();
-
-                    handleCorruption(p, null);
-
-                    updateTurn();
-
-                    // redraw the line back
-                    pane.getChildren().add(p.getLine());
-
-                    // update corruption scores
-                    player1Score.setText(updateScore(true));
-                    player2Score.setText(updateScore(false));
-
-                    // check to see if game should end
-                    if ((double) player1Corruption.size() / getFieldSize() >= ENV.VICTORY) {
-                        stage.setScene(new EndGame(true).render(stage));
-                    } else if ((double) player2Corruption.size() / getFieldSize() >= ENV.VICTORY) {
-                        stage.setScene(new EndGame(false).render(stage));
+                    // check to see if AI should make a turn
+                    if (AIMode && !player1Turn) {
+                        AITurn(stage);
                     }
                 });
             });
@@ -248,8 +227,6 @@ public class SquareField extends Field {
      * @return      The scene for the stage for the pane.
      */
     public Scene load(Stage stage) {
-        var pane = new Pane(canvas);
-
         var exitBtn = new CustomButton("Exit", 680, 550, 100, 30);
         exitBtn.setOnAction(e -> stage.setScene(new MainMenu().render(stage)));
         pane.getChildren().add(exitBtn);
@@ -267,8 +244,8 @@ public class SquareField extends Field {
         var scene = new Scene(pane, ENV.WIDTH, ENV.HEIGHT);
         initField(50, 30);
 
-        var player1Score = new CustomLabel(Math.round((double) player1Corruption.size() / getFieldSize() * 100) + "%", ENV.PLAYER1_COLOUR, ENV.WIDTH - 80, 20);
-        var player2Score = new CustomLabel(Math.round((double) player2Corruption.size() / getFieldSize() * 100) + "%", ENV.PLAYER2_COLOUR, ENV.WIDTH - 80, 40);
+        player1Score = new CustomLabel(Math.round((double) player1Corruption.size() / getFieldSize() * 100) + "%", ENV.PLAYER1_COLOUR, ENV.WIDTH - 80, 20);
+        player2Score = new CustomLabel(Math.round((double) player2Corruption.size() / getFieldSize() * 100) + "%", ENV.PLAYER2_COLOUR, ENV.WIDTH - 80, 40);
 
         pane.getChildren().add(player1Score);
         pane.getChildren().add(player2Score);
@@ -307,34 +284,11 @@ public class SquareField extends Field {
                 if (!player1Turn && !player2Corruption.contains(polygonIndex)) return;
 
                 Platform.runLater(() -> {
-                    // remove the old line to replace with the new one
-                    pane.getChildren().remove(p.getLine());
-
-                    // update the state and rotate the line accordingly
-                    p.updateState();
-                    p.rotateLine();
-
-                    handleCorruption(p, null);
-
-                    updateTurn();
-
-                    // redraw the line back
-                    pane.getChildren().add(p.getLine());
-
-                    // update corruption scores
-                    player1Score.setText(updateScore(true));
-                    player2Score.setText(updateScore(false));
-
-                    // check to see if game should end
-                    if ((double) player1Corruption.size() / getFieldSize() >= ENV.VICTORY) {
-                        stage.setScene(new EndGame(true).render(stage));
-                    } else if ((double) player2Corruption.size() / getFieldSize() >= ENV.VICTORY) {
-                        stage.setScene(new EndGame(false).render(stage));
-                    }
+                    makeTurn(stage, p);
 
                     // check to see if AI should make a turn
                     if (AIMode && !player1Turn) {
-                        AITurn(stage, player1Score, player2Score);
+                        AITurn(stage);
                     }
                 });
             });

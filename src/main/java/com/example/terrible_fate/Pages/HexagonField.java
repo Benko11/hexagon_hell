@@ -31,6 +31,13 @@ public class HexagonField extends Field {
         this.player2Start = 2 * sideLength - 2;
     }
 
+    public HexagonField(int sideLength, boolean AIMode) {
+        super(sideLength);
+        this.player1Start = 0;
+        this.player2Start = 2 * sideLength - 2;
+        this.AIMode = AIMode;
+    }
+
     public HexagonField(int sideLength, ArrayList<Integer> player1Corruption, ArrayList<Integer> player2Corruption, ArrayList<Integer> stages, boolean player1Turn, boolean AIMode) {
         super(sideLength, player1Corruption, player2Corruption, stages, player1Turn, AIMode);
     }

@@ -38,6 +38,18 @@ abstract public class Field {
         this.pane = new Pane(canvas);
     }
 
+    public Field(int sideLength, boolean AIMode) {
+        this.sideLength = sideLength;
+        this.canvas = new Canvas(ENV.WIDTH, ENV.HEIGHT);
+        this.hexagons = new ArrayList<>();
+        this.polygons = new ArrayList<>();
+        this.player1Turn = true;
+        this.player1Corruption = new ArrayList<>();
+        this.player2Corruption = new ArrayList<>();
+        this.pane = new Pane(canvas);
+        this.AIMode = AIMode;
+    }
+
     public Field(int sideLength, ArrayList<Integer> player1Corruption, ArrayList<Integer> player2Corruption, ArrayList<Integer> stages, boolean player1Turn, boolean AIMode) {
         this.sideLength = sideLength;
         this.player1Corruption = player1Corruption;

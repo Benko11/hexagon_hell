@@ -35,11 +35,18 @@ public class SquareField extends Field {
         super(sideLength, player1Corruption, player2Corruption, stages, player1Turn, AIMode);
     }
 
-        /**
-         * Prepares hexagons to be drawn into the field.
-         * @param initX the X coordinate of the leftmost hexagon's upper-left point
-         * @param initY the Y coordinate of the leftmost hexagon's upper-left point
-         */
+    public SquareField(int sideLength, boolean AIMode) {
+        super(sideLength);
+        this.player1Start = 0;
+        this.player2Start = 2 * sideLength - 2;
+        this.AIMode = AIMode;
+    }
+
+    /**
+     * Prepares hexagons to be drawn into the field.
+     * @param initX the X coordinate of the leftmost hexagon's upper-left point
+     * @param initY the Y coordinate of the leftmost hexagon's upper-left point
+     */
     public void initField(double initX, double initY) {
         var gc = canvas.getGraphicsContext2D();
         final var original = initY;
@@ -147,6 +154,7 @@ public class SquareField extends Field {
      * @return      The scene for the stage for the pane.
      */
     public Scene render(Stage stage) {
+        System.out.println(AIMode);
         var pane = new Pane(canvas);
 
         var exitBtn = new CustomButton("Exit", 680, 550, 100, 30);

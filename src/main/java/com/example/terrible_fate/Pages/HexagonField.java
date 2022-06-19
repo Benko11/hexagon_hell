@@ -8,6 +8,7 @@ import javafx.scene.shape.Polygon;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Draws a field where hexagons are arranged in one large hexagon.
@@ -350,6 +351,11 @@ public class HexagonField extends Field {
                         stage.setScene(new EndGame(true).render(stage));
                     } else if ((double) player2Corruption.size() / getFieldSize() >= ENV.VICTORY) {
                         stage.setScene(new EndGame(false).render(stage));
+                    }
+
+                    // check to see if AI should make a turn
+                    if (AIMode && !player1Turn) {
+                        AITurn(stage, player1Score, player2Score);
                     }
                 });
             });

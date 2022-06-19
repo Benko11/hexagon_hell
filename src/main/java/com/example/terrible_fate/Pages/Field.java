@@ -1,5 +1,6 @@
 package com.example.terrible_fate.Pages;
 
+import com.example.terrible_fate.Components.CustomLabel;
 import com.example.terrible_fate.Components.Hexagon;
 import com.example.terrible_fate.Components.ReactivePolygon;
 import com.example.terrible_fate.ENV;
@@ -13,7 +14,8 @@ import java.util.Random;
 
 /**
  * A template for HexagonField and SquareField.
- * Implements the common attributes and methods that are then inherited from,
+ * Implements the common attributes and methods that are then inherited from.
+ * If AI is present, it is always assumed to be Player 2.
  */
 abstract public class Field {
     // side length in hexagons
@@ -193,5 +195,31 @@ abstract public class Field {
         }
 
         return new Random().nextInt(6) + 1;
+    }
+
+    protected void AITurn(Stage stage, CustomLabel player1Score, CustomLabel player2Score) {
+        if (player1Turn) return;
+
+        var randomFieldIndex = player2Corruption.get(new Random().nextInt(player2Corruption.size()));
+
+        pane.getChildren().remove(polygons.get(randomFieldIndex).getLine());
+
+        polygons.get(randomFieldIndex).updateState();
+        polygons.get(randomFieldIndex).rotateLine();
+        handleCorruption(polygons.get(randomFieldIndex), null);
+
+        pane.getChildren().add(polygons.get(randomFieldIndex).getLine());
+
+        updateTurn();
+
+        // check to see if game should end
+        if ((double) player1Corruption.size() / getFieldSize() >= ENV.VICTORY) {
+            stage.setScene(new EndGame(true).render(stage));
+        } else if ((double) player2Corruption.size() / getFieldSize() >= ENV.VICTORY) {
+            stage.setScene(new EndGame(false).render(stage));
+        }
+
+        player1Score.setText(updateScore(true));
+        player2Score.setText(updateScore(false));
     }
 }

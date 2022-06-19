@@ -331,6 +331,11 @@ public class SquareField extends Field {
                     } else if ((double) player2Corruption.size() / getFieldSize() >= ENV.VICTORY) {
                         stage.setScene(new EndGame(false).render(stage));
                     }
+
+                    // check to see if AI should make a turn
+                    if (AIMode && !player1Turn) {
+                        AITurn(stage, player1Score, player2Score);
+                    }
                 });
             });
         }

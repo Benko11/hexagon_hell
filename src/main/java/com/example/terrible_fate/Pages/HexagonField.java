@@ -1,9 +1,6 @@
 package com.example.terrible_fate.Pages;
 
-import com.example.terrible_fate.Components.CustomButton;
-import com.example.terrible_fate.Components.Hexagon;
-import com.example.terrible_fate.Components.ReactivePolygon;
-import com.example.terrible_fate.Components.Vector;
+import com.example.terrible_fate.Components.*;
 import com.example.terrible_fate.ENV;
 import javafx.application.Platform;
 import javafx.scene.Group;
@@ -23,21 +20,19 @@ import java.util.Random;
  * Draws a field where hexagons are arranged in one large hexagon.
  * Adjustable size.
  */
-public class HexagonField {
-    private int sideLength;
-    private Canvas canvas;
-    private ArrayList<Hexagon> hexagons;
-    private ArrayList<ReactivePolygon> polygons;
-
+public class HexagonField extends Field {
     /**
      * Initializes the basic values used in the field.
      * @param sideLength the length of one side of the large hexagon (equilateral type)
      */
     public HexagonField(int sideLength) {
-        this.sideLength = sideLength;
-        this.canvas = new Canvas(ENV.WIDTH, ENV.HEIGHT);
-        this.hexagons = new ArrayList<>();
-        this.polygons = new ArrayList<>();
+        super(sideLength);
+        this.player1Start = 0;
+        this.player2Start = 2 * sideLength - 2;
+    }
+
+    public HexagonField(int sideLength, ArrayList<Integer> player1Corruption, ArrayList<Integer> player2Corruption, ArrayList<Integer> stages, boolean player1Turn, boolean AIMode) {
+        super(sideLength, player1Corruption, player2Corruption, stages, player1Turn, AIMode);
     }
 
     /**
@@ -45,14 +40,13 @@ public class HexagonField {
      * @param initX the X coordinate of the topmost hexagon's upper-left point
      * @param initY the Y coordinate of the topmost hexagon's upper-left point
      */
+    @Override
     public void initField(double initX, double initY) {
         final int largest = sideLength * 2 - 1;
         int indexX = largest - 1;
         int indexY = sideLength - 1;
         for (int i = 0; i < largest; i++) {
             var hexagon = new Hexagon(initX, initY + ENV.APOTHEM * 2 * i, canvas.getGraphicsContext2D(), new Vector(indexX, indexY));
-//            canvas.getGraphicsContext2D().setFont(new Font("SF Mono", 9));
-//            canvas.getGraphicsContext2D().fillText(indexX + "," + indexY, initX, initY + ENV.APOTHEM * 2 * i + ENV.HEXAGON_RADIUS);
             hexagons.add(hexagon);
             indexX--;
         }
@@ -65,8 +59,6 @@ public class HexagonField {
             indexX = largest - 1 - i;
             for (int j = 0; j < largest - i; j++) {
                 var leftHexagon = new Hexagon(initX - i * (ENV.HEXAGON_RADIUS + aux), initY + i * ENV.APOTHEM + ENV.APOTHEM * 2 * j, canvas.getGraphicsContext2D(), new Vector(indexX, indexY));
-//                canvas.getGraphicsContext2D().setFont(new Font("SF Mono", 9));
-//                canvas.getGraphicsContext2D().fillText(indexX + "," + indexY, initX - i * (ENV.HEXAGON_RADIUS + aux), initY + i * ENV.APOTHEM + ENV.APOTHEM * 2 * j + ENV.HEXAGON_RADIUS);
                 hexagons.add(leftHexagon);
                 indexX--;
             }
@@ -80,8 +72,6 @@ public class HexagonField {
 
             for (int j = 0; j < largest - i; j++) {
                 var rightHexagon = new Hexagon(initX + i * (ENV.HEXAGON_RADIUS + aux), initY + i * ENV.APOTHEM + ENV.APOTHEM * 2 * j, canvas.getGraphicsContext2D(), new Vector(indexX, indexY));
-//                canvas.getGraphicsContext2D().setFont(new Font("SF Mono", 9));
-//                canvas.getGraphicsContext2D().fillText(indexX + "," + indexY, initX + i * (ENV.HEXAGON_RADIUS + aux), initY + i * ENV.APOTHEM + ENV.APOTHEM * 2 * j + ENV.HEXAGON_RADIUS);
                 hexagons.add(rightHexagon);
                 indexX--;
             }
@@ -93,6 +83,7 @@ public class HexagonField {
      * @param hex The hexagon from which the neighbouring hexagons are sought.
      * @return    The list of hexagons of adjacent hexagons to a particular hexagon hex.
      */
+    @Override
     public ArrayList<Hexagon> getAdjacentHexagons(Hexagon hex) {
         ArrayList<Hexagon> adjacent = new ArrayList<>();
         final var coords = hex.getVector();
@@ -167,7 +158,110 @@ public class HexagonField {
     }
 
     /**
-     * Renders the entire field
+     * Generates the number of hexagons in the field.
+     * @return The cardinality of the set of hexagons in the field.
+     */
+    protected int getFieldSize() {
+        int count = 1;
+        for (int i = 1; i < sideLength; i++) {
+            count += 6 * i;
+        }
+
+        return count;
+    }
+
+    public Scene load(Stage stage) {
+        var pane = new Pane(canvas);
+
+        var scene = new Scene(pane, ENV.WIDTH, ENV.HEIGHT);
+        initField(ENV.WIDTH / 2.0 - ENV.HEXAGON_RADIUS / 2.0, 30);
+
+        var player1Score = new CustomLabel(Math.round((double) player1Corruption.size() / getFieldSize() * 100) + "%", ENV.PLAYER1_COLOUR, 20, 20);
+        var player2Score = new CustomLabel(Math.round((double) player2Corruption.size() / getFieldSize() * 100) + "%", ENV.PLAYER2_COLOUR, 20, 40);
+        pane.getChildren().add(player1Score);
+        pane.getChildren().add(player2Score);
+
+        var exitBtn = new CustomButton("Exit", 680, 550, 100, 30);
+        exitBtn.setOnAction(e -> stage.setScene(new MainMenu().render(stage)));
+        pane.getChildren().add(exitBtn);
+
+        var saveBtn = new CustomButton("Save", 20, 550, 100, 30);
+        saveBtn.setOnAction(e -> {
+            var states = new ArrayList<Integer>();
+            for (var p: polygons) {
+                states.add(p.getState());
+            }
+            stage.setScene(new Save(player1Corruption, player2Corruption, states, true, sideLength, player1Turn, AIMode).render(stage));
+        });
+        pane.getChildren().add(saveBtn);
+
+        for (var hexagon: hexagons) {
+            Polygon pol = hexagon.draw();
+            var p = new ReactivePolygon(stages.get(hexagons.indexOf(hexagon)));
+            p.addPolygon(pol);
+
+            polygons.add(p);
+
+            pane.getChildren().add(polygons.get(polygons.size() - 1).getPolygon());
+            pane.getChildren().add(polygons.get(polygons.size() - 1).getCircle());
+            pane.getChildren().add(polygons.get(polygons.size() - 1).getLine());
+        }
+
+        for (var item: player1Corruption) {
+            polygons.get(item).corrupt(true);
+        }
+
+        for (var item: player2Corruption) {
+            polygons.get(item).corrupt(false);
+        }
+
+        for (var p: polygons) {
+            var polygonIndex = polygons.indexOf(p);
+            if (polygonIndex == player1Start) {
+                p.corrupt(true);
+            } else if (polygonIndex == player2Start) {
+                p.corrupt(false);
+            }
+
+            p.getPolygon().setOnMouseClicked(e -> {
+                // making sure turns are taken properly
+                if (player1Turn && !player1Corruption.contains(polygonIndex)) return;
+                if (!player1Turn && !player2Corruption.contains(polygonIndex)) return;
+
+                Platform.runLater(() -> {
+                    // remove the old line to replace with the new one
+                    pane.getChildren().remove(p.getLine());
+
+                    // update the state and rotate the line accordingly
+                    p.updateState();
+                    p.rotateLine();
+
+                    handleCorruption(p, null);
+
+                    updateTurn();
+
+                    // redraw the line back
+                    pane.getChildren().add(p.getLine());
+
+                    // update corruption scores
+                    player1Score.setText(updateScore(true));
+                    player2Score.setText(updateScore(false));
+
+                    // check to see if game should end
+                    if ((double) player1Corruption.size() / getFieldSize() >= ENV.VICTORY) {
+                        stage.setScene(new EndGame(true).render(stage));
+                    } else if ((double) player2Corruption.size() / getFieldSize() >= ENV.VICTORY) {
+                        stage.setScene(new EndGame(false).render(stage));
+                    }
+                });
+            });
+        }
+
+        return scene;
+    }
+
+    /**
+     * Renders the entire field and contains an event listener for updates on the scene.
      * @param stage Stage used for potential redrawing.
      * @return      The scene for the stage for the pane.
      */
@@ -177,10 +271,24 @@ public class HexagonField {
         var scene = new Scene(pane, ENV.WIDTH, ENV.HEIGHT);
         initField(ENV.WIDTH / 2.0 - ENV.HEXAGON_RADIUS / 2.0, 30);
 
-        var exitBtn = new CustomButton("Exit", 680, 550);
-        exitBtn.setPrefSize(100, 30);
+        var player1Score = new CustomLabel(Math.round(1.0 / getFieldSize() * 100) + "%", ENV.PLAYER1_COLOUR, 20, 20);
+        var player2Score = new CustomLabel(Math.round(1.0 / getFieldSize() * 100) + "%", ENV.PLAYER2_COLOUR, 20, 40);
+        pane.getChildren().add(player1Score);
+        pane.getChildren().add(player2Score);
+
+        var exitBtn = new CustomButton("Exit", 680, 550, 100, 30);
         exitBtn.setOnAction(e -> stage.setScene(new MainMenu().render(stage)));
         pane.getChildren().add(exitBtn);
+
+        var saveBtn = new CustomButton("Save", 20, 550, 100, 30);
+        saveBtn.setOnAction(e -> {
+            var states = new ArrayList<Integer>();
+            for (var p: polygons) {
+                states.add(p.getState());
+            }
+            stage.setScene(new Save(player1Corruption, player2Corruption, states, true, sideLength, player1Turn, AIMode).render(stage));
+        });
+        pane.getChildren().add(saveBtn);
 
         for (var hexagon: hexagons) {
             int state = generateState(hexagon);
@@ -196,43 +304,51 @@ public class HexagonField {
             pane.getChildren().add(polygons.get(polygons.size() - 1).getLine());
         }
 
+        player1Corruption.add(player1Start);
+        player2Corruption.add(player2Start);
+
         for (var p: polygons) {
-            if (polygons.indexOf(p) == 0) {
+            var polygonIndex = polygons.indexOf(p);
+            if (polygonIndex == player1Start) {
                 p.corrupt(true);
-            } else if (polygons.indexOf(p) == 2 * sideLength - 2) {
+            } else if (polygonIndex == player2Start) {
                 p.corrupt(false);
             }
 
             p.getPolygon().setOnMouseClicked(e -> {
+                // making sure turns are taken properly
+                if (player1Turn && !player1Corruption.contains(polygonIndex)) return;
+                if (!player1Turn && !player2Corruption.contains(polygonIndex)) return;
+
                 Platform.runLater(() -> {
+                    // remove the old line to replace with the new one
                     pane.getChildren().remove(p.getLine());
+
+                    // update the state and rotate the line accordingly
                     p.updateState();
-                    p.drawLine();
+                    p.rotateLine();
+
+                    handleCorruption(p, null);
+
+                    updateTurn();
+
+                    // redraw the line back
                     pane.getChildren().add(p.getLine());
+
+                    // update corruption scores
+                    player1Score.setText(updateScore(true));
+                    player2Score.setText(updateScore(false));
+
+                    // check to see if game should end
+                    if ((double) player1Corruption.size() / getFieldSize() >= ENV.VICTORY) {
+                        stage.setScene(new EndGame(true).render(stage));
+                    } else if ((double) player2Corruption.size() / getFieldSize() >= ENV.VICTORY) {
+                        stage.setScene(new EndGame(false).render(stage));
+                    }
                 });
             });
         }
 
-        System.out.println(hexagons.get(30));
-        System.out.println(getAdjacentHexagons(hexagons.get(30)));
-
         return scene;
-    }
-
-    /**
-     * Generates a state for the initial configurations of ReactivePolygon objects in the field.
-     * @param hexagon Hexagon upon which the decision is made.
-     * @return        State number that puts the given hexagon in its respective place.
-     */
-    private int generateState(Hexagon hexagon) {
-        if (hexagons.indexOf(hexagon) == 0) {
-            return 2;
-        }
-
-        if (hexagons.indexOf(hexagon) == 2 * sideLength - 2) {
-            return 5;
-        }
-
-        return new Random().nextInt(7 - 1) + 1;
     }
 }

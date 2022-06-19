@@ -1,13 +1,11 @@
 package com.example.terrible_fate.Pages;
 
-import com.example.terrible_fate.Components.CustomButton;
-import com.example.terrible_fate.Components.Hexagon;
-import com.example.terrible_fate.Components.ReactivePolygon;
-import com.example.terrible_fate.Components.Vector;
+import com.example.terrible_fate.Components.*;
 import com.example.terrible_fate.ENV;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -23,28 +21,25 @@ import java.util.Random;
  * Draws a field where hexagons are arranged in one large square.
  * Adjustable size.
  */
-public class SquareField {
-    private int sideLength;
-    private Canvas canvas;
-    private ArrayList<Hexagon> hexagons;
-    private ArrayList<ReactivePolygon> polygons;
-
+public class SquareField extends Field {
     /**
      * Initializes the basic values used in the field.
      * @param sideLength the length of the vertical side of the hexagon (shorter one)
      */
     public SquareField(int sideLength) {
-        this.sideLength = sideLength;
-        this.canvas = new Canvas(ENV.WIDTH, ENV.HEIGHT);
-        this.hexagons = new ArrayList<>();
-        this.polygons = new ArrayList<>();
+        super(sideLength);
+        player1Start = 0;
     }
 
-    /**
-     * Prepares hexagons to be drawn into the field.
-     * @param initX the X coordinate of the leftmost hexagon's upper-left point
-     * @param initY the Y coordinate of the leftmost hexagon's upper-left point
-     */
+    public SquareField(int sideLength, ArrayList<Integer> player1Corruption, ArrayList<Integer> player2Corruption, ArrayList<Integer> stages, boolean player1Turn, boolean AIMode) {
+        super(sideLength, player1Corruption, player2Corruption, stages, player1Turn, AIMode);
+    }
+
+        /**
+         * Prepares hexagons to be drawn into the field.
+         * @param initX the X coordinate of the leftmost hexagon's upper-left point
+         * @param initY the Y coordinate of the leftmost hexagon's upper-left point
+         */
     public void initField(double initX, double initY) {
         var gc = canvas.getGraphicsContext2D();
         final var original = initY;
@@ -82,6 +77,8 @@ public class SquareField {
                 setX++;
             }
         }
+
+        player2Start = hexagons.size() - 1;
     }
 
     /**
@@ -140,6 +137,10 @@ public class SquareField {
         return adjacent;
     }
 
+    protected int getFieldSize() {
+        return (int) Math.ceil((sideLength + 1) / 2.0) * sideLength + (int) Math.floor((sideLength + 1) / 2.0) * (sideLength - 1);
+    }
+
     /**
      * Renders the entire field
      * @param stage Stage used for potential redrawing.
@@ -148,15 +149,28 @@ public class SquareField {
     public Scene render(Stage stage) {
         var pane = new Pane(canvas);
 
-        var exitBtn = new CustomButton("Exit", 680, 550);
-        exitBtn.setPrefSize(100, 30);
-
+        var exitBtn = new CustomButton("Exit", 680, 550, 100, 30);
         exitBtn.setOnAction(e -> stage.setScene(new MainMenu().render(stage)));
-
         pane.getChildren().add(exitBtn);
+
+        var saveBtn = new CustomButton("Save", 20, 550, 100, 30);
+        saveBtn.setOnAction(e -> {
+            var states = new ArrayList<Integer>();
+            for (var p: polygons) {
+                states.add(p.getState());
+            }
+            stage.setScene(new Save(player1Corruption, player2Corruption, states, false, sideLength, player1Turn, AIMode).render(stage));
+        });
+        pane.getChildren().add(saveBtn);
 
         var scene = new Scene(pane, ENV.WIDTH, ENV.HEIGHT);
         initField(50, 30);
+
+        var player1Score = new CustomLabel(Math.round(1.0 / getFieldSize() * 100) + "%", ENV.PLAYER1_COLOUR, ENV.WIDTH - 80, 20);
+        var player2Score = new CustomLabel(Math.round(1.0 / getFieldSize() * 100) + "%", ENV.PLAYER2_COLOUR, ENV.WIDTH - 80, 40);
+
+        pane.getChildren().add(player1Score);
+        pane.getChildren().add(player2Score);
 
         for (var hexagon: hexagons) {
             int state = generateState(hexagon);
@@ -172,19 +186,47 @@ public class SquareField {
             pane.getChildren().add(polygons.get(polygons.size() - 1).getLine());
         }
 
+        player1Corruption.add(player1Start);
+        player2Corruption.add(player2Start);
+
         for (var p: polygons) {
-            if (polygons.indexOf(p) == 0) {
+            var polygonIndex = polygons.indexOf(p);
+            if (polygonIndex == player1Start) {
                 p.corrupt(true);
-            } else if (polygons.indexOf(p) == polygons.size() - 1) {
+            } else if (polygonIndex == player2Start) {
                 p.corrupt(false);
             }
 
             p.getPolygon().setOnMouseClicked(e -> {
+                // making sure turns are taken properly
+                if (player1Turn && !player1Corruption.contains(polygonIndex)) return;
+                if (!player1Turn && !player2Corruption.contains(polygonIndex)) return;
+
                 Platform.runLater(() -> {
+                    // remove the old line to replace with the new one
                     pane.getChildren().remove(p.getLine());
+
+                    // update the state and rotate the line accordingly
                     p.updateState();
-                    p.drawLine();
+                    p.rotateLine();
+
+                    handleCorruption(p, null);
+
+                    updateTurn();
+
+                    // redraw the line back
                     pane.getChildren().add(p.getLine());
+
+                    // update corruption scores
+                    player1Score.setText(updateScore(true));
+                    player2Score.setText(updateScore(false));
+
+                    // check to see if game should end
+                    if ((double) player1Corruption.size() / getFieldSize() >= ENV.VICTORY) {
+                        stage.setScene(new EndGame(true).render(stage));
+                    } else if ((double) player2Corruption.size() / getFieldSize() >= ENV.VICTORY) {
+                        stage.setScene(new EndGame(false).render(stage));
+                    }
                 });
             });
         }
@@ -192,20 +234,95 @@ public class SquareField {
         return scene;
     }
 
-    /**
-     * Generates a state for the initial configurations of ReactivePolygon objects in the field.
-     * @param hexagon Hexagon upon which the decision is made.
-     * @return        State number that puts the given hexagon in its respective place.
-     */
-    private int generateState(Hexagon hexagon) {
-        if (hexagons.indexOf(hexagon) == 0) {
-            return 2;
+    @Override
+    public Scene load(Stage stage) {
+        var pane = new Pane(canvas);
+
+        var exitBtn = new CustomButton("Exit", 680, 550, 100, 30);
+        exitBtn.setOnAction(e -> stage.setScene(new MainMenu().render(stage)));
+        pane.getChildren().add(exitBtn);
+
+        var saveBtn = new CustomButton("Save", 20, 550, 100, 30);
+        saveBtn.setOnAction(e -> {
+            var states = new ArrayList<Integer>();
+            for (var p: polygons) {
+                states.add(p.getState());
+            }
+            stage.setScene(new Save(player1Corruption, player2Corruption, states, false, sideLength, player1Turn, AIMode).render(stage));
+        });
+        pane.getChildren().add(saveBtn);
+
+        var scene = new Scene(pane, ENV.WIDTH, ENV.HEIGHT);
+        initField(50, 30);
+
+        var player1Score = new CustomLabel(Math.round((double) player1Corruption.size() / getFieldSize() * 100) + "%", ENV.PLAYER1_COLOUR, ENV.WIDTH - 80, 20);
+        var player2Score = new CustomLabel(Math.round((double) player2Corruption.size() / getFieldSize() * 100) + "%", ENV.PLAYER2_COLOUR, ENV.WIDTH - 80, 40);
+
+        pane.getChildren().add(player1Score);
+        pane.getChildren().add(player2Score);
+
+        for (var hexagon: hexagons) {
+            Polygon pol = hexagon.draw();
+            var p = new ReactivePolygon(stages.get(hexagons.indexOf(hexagon)));
+            p.addPolygon(pol);
+
+            polygons.add(p);
+
+            pane.getChildren().add(polygons.get(polygons.size() - 1).getPolygon());
+            pane.getChildren().add(polygons.get(polygons.size() - 1).getCircle());
+            pane.getChildren().add(polygons.get(polygons.size() - 1).getLine());
         }
 
-        if (hexagons.indexOf(hexagon) == hexagons.size() - 1) {
-            return 5;
+        for (var item: player1Corruption) {
+            polygons.get(item).corrupt(true);
         }
 
-        return new Random().nextInt(7 - 1) + 1;
+        for (var item: player2Corruption) {
+            polygons.get(item).corrupt(false);
+        }
+
+        for (var p: polygons) {
+            var polygonIndex = polygons.indexOf(p);
+            if (polygonIndex == player1Start) {
+                p.corrupt(true);
+            } else if (polygonIndex == player2Start) {
+                p.corrupt(false);
+            }
+
+            p.getPolygon().setOnMouseClicked(e -> {
+                // making sure turns are taken properly
+                if (player1Turn && !player1Corruption.contains(polygonIndex)) return;
+                if (!player1Turn && !player2Corruption.contains(polygonIndex)) return;
+
+                Platform.runLater(() -> {
+                    // remove the old line to replace with the new one
+                    pane.getChildren().remove(p.getLine());
+
+                    // update the state and rotate the line accordingly
+                    p.updateState();
+                    p.rotateLine();
+
+                    handleCorruption(p, null);
+
+                    updateTurn();
+
+                    // redraw the line back
+                    pane.getChildren().add(p.getLine());
+
+                    // update corruption scores
+                    player1Score.setText(updateScore(true));
+                    player2Score.setText(updateScore(false));
+
+                    // check to see if game should end
+                    if ((double) player1Corruption.size() / getFieldSize() >= ENV.VICTORY) {
+                        stage.setScene(new EndGame(true).render(stage));
+                    } else if ((double) player2Corruption.size() / getFieldSize() >= ENV.VICTORY) {
+                        stage.setScene(new EndGame(false).render(stage));
+                    }
+                });
+            });
+        }
+
+        return scene;
     }
 }

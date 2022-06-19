@@ -97,21 +97,21 @@ public class ReactivePolygon {
     /**
      * Serves for redrawing lines during a rotation event.
      */
-    public void drawLine() {
+    public void rotateLine() {
         var newValue = (rotate.getAngle() + 60) % 360;
         rotate.setAngle(newValue);
     }
 
     /**
      * Mark the specified polygon based on who corrupted it.
-     * @param player1 Determines if it was player 1's or player 2's turn.
+     * @param player1 Determines if it should corrupt for player 1 or player 2.
      */
     public void corrupt(boolean player1) {
         if (player1) {
-            polygon.setFill(Color.web("#ff0000"));
+            polygon.setFill(Color.web(ENV.PLAYER1_COLOUR));
             return;
         }
 
-        polygon.setFill(Color.web("#0000ff"));
+        polygon.setFill(Color.web(ENV.PLAYER2_COLOUR));
     }
 }

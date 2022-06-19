@@ -144,25 +144,47 @@ abstract public class Field {
      * @param prev previous polygon that was evaluated (null, during first evaluation)
      */
     protected void handleCorruption(ReactivePolygon p, ReactivePolygon prev) {
+        if (prev == null) {
+            var polygonIndex = polygons.indexOf(p);
+            var newState = p.getState();
+            var hexagon = hexagons.get(polygonIndex);
+
+            var relevantHexagon = getAdjacentHexagons(hexagon).get(newState - 1);
+            if (relevantHexagon == null) return; // hexagon does not exist, nothing to corrupt
+            var relevantHexagonIndex = hexagons.indexOf(relevantHexagon);
+
+            handleCorruption(polygons.get(relevantHexagonIndex), p);
+
+            return;
+        }
+
+        // corrupting the current index
+        var corruptedIndex = polygons.indexOf(p);
+        polygons.get(corruptedIndex).corrupt(player1Turn);
+
+        if (player1Turn) {
+            if (!player1Corruption.contains(corruptedIndex))
+                player1Corruption.add(corruptedIndex);
+            player2Corruption.remove(Integer.valueOf(corruptedIndex));
+        } else {
+            player1Corruption.remove(Integer.valueOf(corruptedIndex));
+            if (!player2Corruption.contains(corruptedIndex))
+                player2Corruption.add(corruptedIndex);
+        }
+
+        // forwards direction
         var polygonIndex = polygons.indexOf(p);
         var newState = p.getState();
         var hexagon = hexagons.get(polygonIndex);
-
         var relevantHexagon = getAdjacentHexagons(hexagon).get(newState - 1);
-        if (relevantHexagon == null) return; // hexagon does not exist, nothing to corrupt
-
         var relevantHexagonIndex = hexagons.indexOf(relevantHexagon);
-        polygons.get(relevantHexagonIndex).corrupt(player1Turn); // visually corrupt the field
 
-        if (player1Turn) {
-            if (!player1Corruption.contains(relevantHexagonIndex))
-                player1Corruption.add(relevantHexagonIndex);
-            player2Corruption.remove(Integer.valueOf(relevantHexagonIndex));
-        } else {
-            player1Corruption.remove(Integer.valueOf(relevantHexagonIndex));
-            if (!player2Corruption.contains(relevantHexagonIndex))
-                player2Corruption.add(relevantHexagonIndex);
+        // trivial case
+        if (Math.abs(prev.getState() - p.getState()) == 3 || relevantHexagon == null || player1Turn && player1Corruption.contains(relevantHexagonIndex) || !player1Turn && player2Corruption.contains(relevantHexagonIndex)) {
+            return;
         }
+
+        handleCorruption(polygons.get(relevantHexagonIndex), polygons.get(corruptedIndex));
     }
 
     /**

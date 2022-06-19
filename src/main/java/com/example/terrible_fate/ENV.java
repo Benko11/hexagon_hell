@@ -14,7 +14,7 @@ public class ENV {
     public static String APP_NAME = "Hexagon Hell";
     public static String PLAYER1_COLOUR = "#ff0000";
     public static String PLAYER2_COLOUR = "#ff91af";
-    public static double VICTORY = 0.2;
+    public static double VICTORY = 0.7;
     public static int PLAYER1_STATE_START = 2;
     public static int PLAYER2_STATE_START = 5;
     public static int SMALL_HEX_SIZE = 4;

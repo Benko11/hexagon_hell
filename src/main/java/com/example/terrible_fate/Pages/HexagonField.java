@@ -171,8 +171,6 @@ public class HexagonField extends Field {
     }
 
     public Scene load(Stage stage) {
-        var pane = new Pane(canvas);
-
         var scene = new Scene(pane, ENV.WIDTH, ENV.HEIGHT);
         initField(ENV.WIDTH / 2.0 - ENV.HEXAGON_RADIUS / 2.0, 30);
 
@@ -266,8 +264,6 @@ public class HexagonField extends Field {
      * @return      The scene for the stage for the pane.
      */
     public Scene render(Stage stage) {
-        var pane = new Pane(canvas);
-
         var scene = new Scene(pane, ENV.WIDTH, ENV.HEIGHT);
         initField(ENV.WIDTH / 2.0 - ENV.HEXAGON_RADIUS / 2.0, 30);
 

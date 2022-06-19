@@ -1,10 +1,12 @@
 package com.example.terrible_fate.Pages;
 
+import com.example.terrible_fate.Components.CustomLabel;
 import com.example.terrible_fate.Components.Hexagon;
 import com.example.terrible_fate.Components.ReactivePolygon;
 import com.example.terrible_fate.ENV;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 import java.lang.reflect.Array;
@@ -23,6 +25,7 @@ abstract public class Field {
     protected int player2Start;
     protected boolean AIMode = false;
     protected ArrayList<Integer> stages;
+    protected Pane pane;
 
     public Field(int sideLength) {
         this.sideLength = sideLength;
@@ -32,6 +35,7 @@ abstract public class Field {
         this.player1Turn = true;
         this.player1Corruption = new ArrayList<>();
         this.player2Corruption = new ArrayList<>();
+        this.pane = new Pane(canvas);
     }
 
     public Field(int sideLength, ArrayList<Integer> player1Corruption, ArrayList<Integer> player2Corruption, ArrayList<Integer> stages, boolean player1Turn, boolean AIMode) {
@@ -45,6 +49,7 @@ abstract public class Field {
         this.canvas = new Canvas(ENV.WIDTH, ENV.HEIGHT);
         this.hexagons = new ArrayList<>();
         this.polygons = new ArrayList<>();
+        this.pane = new Pane(canvas);
     }
 
     abstract public void initField(double initX, double initY);
@@ -108,5 +113,32 @@ abstract public class Field {
         }
 
         return new Random().nextInt(6) + 1;
+    }
+
+    protected void update(ReactivePolygon p, CustomLabel player1Score, CustomLabel player2Score, Stage stage) {
+        // remove the old line to replace with the new one
+        pane.getChildren().remove(p.getLine());
+
+        // update the state and rotate the line accordingly
+        p.updateState();
+        p.rotateLine();
+
+        handleCorruption(p, null);
+
+        updateTurn();
+
+        // redraw the line back
+        pane.getChildren().add(p.getLine());
+
+        // update corruption scores
+        player1Score.setText(updateScore(true));
+        player2Score.setText(updateScore(false));
+
+        // check to see if game should end
+        if ((double) player1Corruption.size() / getFieldSize() >= ENV.VICTORY) {
+            stage.setScene(new EndGame(true).render(stage));
+        } else if ((double) player2Corruption.size() / getFieldSize() >= ENV.VICTORY) {
+            stage.setScene(new EndGame(false).render(stage));
+        }
     }
 }

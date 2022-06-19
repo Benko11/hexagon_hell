@@ -248,11 +248,58 @@ abstract public class Field {
     /**
      * Wrapper method that contains the logic for AI making turns.
      * When it's player1's turn, the method is trivially ignored.
+     *
      * @param stage Stage used for potential rendering.
      */
     protected void AITurn(Stage stage) {
         if (player1Turn) return;
 
+        System.out.println(player2Corruption);
+
+        Integer corrupt = null;
+
+        // firstly, check if corrupting any polygon is beneficial
+        for (var item: player2Corruption) {
+            var extractedPolygon = polygons.get(item);
+            var extractedHexagon = hexagons.get(item);
+
+            var fakeUpdatedState = (extractedPolygon.getState() + 1) % 6;
+            var possibleCorruptee = getAdjacentHexagons(extractedHexagon).get(fakeUpdatedState);
+
+            var possibleCorrupteeIndex = hexagons.indexOf(possibleCorruptee);
+            if (!player2Corruption.contains(possibleCorrupteeIndex)) {
+                corrupt = item;
+                break;
+            }
+        }
+
+        System.out.println(corrupt);
+
+        if (corrupt != null) {
+            makeTurn(stage, polygons.get(corrupt));
+            return;
+        }
+
+        // at this point we could not find a move that would result in immediately corrupting any fields
+        // let's move the first hexagon that is not surrounded by AI's own corrupted fields from all sides
+
+        for (var item: player2Corruption) {
+            var extractedPolygon = polygons.get(item);
+            var extractedHexagon = hexagons.get(item);
+            var neighbours = getAdjacentHexagons(extractedHexagon);
+
+            for (var neighbour: neighbours) {
+                if (neighbour == null) continue;
+
+                var neighbourIndex = hexagons.indexOf(neighbour);
+                if (!player2Corruption.contains(neighbourIndex)) {
+                    makeTurn(stage, polygons.get(neighbourIndex));
+                    return;
+                }
+            }
+        }
+
+        // otherwise, just rely on randomness, because we are done here
         var randomFieldIndex = player2Corruption.get(new Random().nextInt(player2Corruption.size()));
 
         makeTurn(stage, polygons.get(randomFieldIndex));

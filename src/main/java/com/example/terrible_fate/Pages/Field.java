@@ -155,6 +155,16 @@ abstract public class Field {
 
             handleCorruption(polygons.get(relevantHexagonIndex), p);
 
+            // backwards direction
+            var backwardsIndex = ((newState + 3) - 1) % 6;
+            var backwardsHexagon = getAdjacentHexagons(hexagon).get(backwardsIndex);
+            if (backwardsHexagon == null) return;
+            var polygonBackwardsIndex = hexagons.indexOf(backwardsHexagon);
+
+            if (polygons.get(polygonBackwardsIndex).getState() == polygons.get(polygonIndex).getState()) {
+                handleCorruption(polygons.get(polygonBackwardsIndex), polygons.get(polygonIndex));
+            }
+
             return;
         }
 
@@ -185,6 +195,15 @@ abstract public class Field {
         }
 
         handleCorruption(polygons.get(relevantHexagonIndex), polygons.get(corruptedIndex));
+
+        var backwardsIndex = ((newState + 3) - 1) % 6;
+        var backwardsHexagon = getAdjacentHexagons(hexagon).get(backwardsIndex);
+        if (backwardsHexagon == null) return;
+        var polygonBackwardsIndex = hexagons.indexOf(backwardsHexagon);
+
+        if (polygons.get(polygonBackwardsIndex).getState() == polygons.get(polygonIndex).getState()) {
+            handleCorruption(polygons.get(polygonBackwardsIndex), polygons.get(polygonIndex));
+        }
     }
 
     /**

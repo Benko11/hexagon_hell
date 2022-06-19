@@ -140,6 +140,7 @@ abstract public class Field {
     /**
      * We assume that the hexagons and the polygons share the same indexing.
      * The double arguments are used in recursion, and if states of p and prev cancel out, the recursion terminates.
+     * There are other trivial cases, such as neighbouring hexagon not existing (being null).
      * @param p    current polygon that is being evaluated
      * @param prev previous polygon that was evaluated (null, during first evaluation)
      */
@@ -244,6 +245,11 @@ abstract public class Field {
         return new Random().nextInt(6) + 1;
     }
 
+    /**
+     * Wrapper method that contains the logic for AI making turns.
+     * When it's player1's turn, the method is trivially ignored.
+     * @param stage Stage used for potential rendering.
+     */
     protected void AITurn(Stage stage) {
         if (player1Turn) return;
 
@@ -252,6 +258,11 @@ abstract public class Field {
         makeTurn(stage, polygons.get(randomFieldIndex));
     }
 
+    /**
+     * Makes a turn for a given player (read from the class attribute)
+     * @param stage Stage used for potential redrawing.
+     * @param p     Polygon that is changed/corrupted.
+     */
     protected void makeTurn(Stage stage, ReactivePolygon p) {
         // remove the old line to replace with the new one
         pane.getChildren().remove(p.getLine());
@@ -277,6 +288,5 @@ abstract public class Field {
         } else if ((double) player2Corruption.size() / getFieldSize() >= ENV.VICTORY) {
             stage.setScene(new EndGame(false).render(stage));
         }
-
     }
 }

@@ -7,6 +7,9 @@ import javafx.scene.shape.Polygon;
 
 import java.util.ArrayList;
 
+/**
+ * Helper class which encapsulates the logic and behaviour of the hexagons that are drawn to the scene.
+ */
 public class Hexagon extends Canvas {
     private double initX;
     private double initY;
@@ -14,7 +17,7 @@ public class Hexagon extends Canvas {
     private Vector vector;
 
     /**
-     *
+     * Initializes all properties necessary for desired functionality of the hexagon.
      * @param initX  upper left point X coordinate
      * @param initY  upper left point Y coordinate
      * @param gc     the canvas context

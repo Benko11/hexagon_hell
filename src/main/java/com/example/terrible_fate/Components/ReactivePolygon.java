@@ -7,17 +7,19 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.transform.Rotate;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-
 /**
  * Wrapper class where the logic of object/hexagon interactions is handled.
  */
 public class ReactivePolygon {
+    // polygon on which the event listener is based
     private Polygon polygon;
+    // circle that is in the centre of each hexagon
     private Circle circle;
+    // line that is rotated based on the state
     private Line line;
+    // the state of the field (1-6) determining its position and interactions
     private int state;
+    // rotation helper
     private Rotate rotate;
 
     /**
@@ -76,7 +78,7 @@ public class ReactivePolygon {
     }
 
     /**
-     * @return the current state of the structure (i.e., where the needle is pointing)
+     * @return the current state of the structure (i.e., where the line is pointing)
      */
     public int getState() {
         return state;
@@ -104,7 +106,7 @@ public class ReactivePolygon {
 
     /**
      * Mark the specified polygon based on who corrupted it.
-     * @param player1 Determines if it should corrupt for player 1 or player 2.
+     * @param player1 Determines if it should corrupt the field for player 1 or player 2.
      */
     public void corrupt(boolean player1) {
         if (player1) {

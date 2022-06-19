@@ -13,6 +13,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * Renders the page where a particular gameplay is saved.
+ * Game is saved automatically and user is presented with the file name that has been generated for the save file.
+ */
 public class Save {
     private ArrayList<Integer> player1Corruption;
     private ArrayList<Integer> player2Corruption;
@@ -22,6 +26,16 @@ public class Save {
     private boolean player1Turn;
     private boolean AIMode;
 
+    /**
+     * Inherits the properties from a respective field
+     * @param player1Corruption  list of corrupted fields by player 1 (integers used for identification)
+     * @param player2Corruption  list of corrupted fields by player 2 (integers used for identification)
+     * @param states             used in loading to keep track of the states of each hexagon (1-6)
+     * @param isHexagon          determines if the save is from a HexagonField or SquareField
+     * @param sideLength         length in hexagons of one side in HexagonField, and the shorter side in SquareField
+     * @param player1Turn        determiner of players' turns
+     * @param AIMode             determiner of AI/1v1 player mode
+     */
     public Save(ArrayList<Integer> player1Corruption, ArrayList<Integer> player2Corruption, ArrayList<Integer> states, boolean isHexagon, int sideLength, boolean player1Turn, boolean AIMode) {
         this.player1Corruption = player1Corruption;
         this.player2Corruption = player2Corruption;
@@ -31,8 +45,12 @@ public class Save {
         this.player1Turn = player1Turn;
         this.AIMode = AIMode;
     }
-    
-    public String generateFileContents() {
+
+    /**
+     * Helper method that returns the file contents of the save file in a string.
+     * @return The string containing vital game save data.
+     */
+    private String generateFileContents() {
         StringBuilder str = new StringBuilder();
         if (isHexagon)
             str.append("hex\n");
@@ -60,6 +78,11 @@ public class Save {
         return str.toString();
     }
 
+    /**
+     * Presents user with the save message and allows them to return to the main menu.
+     * @param stage Stage used for potential redrawing.
+     * @return      The scene for the stage for the pane.
+     */
     public Scene render(Stage stage) {
         var pane = new Pane();
         System.out.println(generateFileContents());

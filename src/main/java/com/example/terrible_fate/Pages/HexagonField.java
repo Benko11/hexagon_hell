@@ -3,18 +3,11 @@ package com.example.terrible_fate.Pages;
 import com.example.terrible_fate.Components.*;
 import com.example.terrible_fate.ENV;
 import javafx.application.Platform;
-import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Label;
-import javafx.scene.layout.Pane;
 import javafx.scene.shape.Polygon;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Random;
 
 /**
  * Draws a field where hexagons are arranged in one large hexagon.
@@ -31,6 +24,11 @@ public class HexagonField extends Field {
         this.player2Start = 2 * sideLength - 2;
     }
 
+    /**
+     * Initializes the basic values used in the field and allows to manually set the AI mode.
+     * @param sideLength the length of one side of the large hexagon (equilateral type)
+     * @param AIMode     determines if game is played in AI or 1v1 mode
+     */
     public HexagonField(int sideLength, boolean AIMode) {
         super(sideLength);
         this.player1Start = 0;
@@ -177,6 +175,11 @@ public class HexagonField extends Field {
         return count;
     }
 
+    /**
+     * Loads the field into a state that is described in a save file.
+     * @param stage Stage used for potential redrawing.
+     * @return      The scene for the stage for the pane.
+     */
     public Scene load(Stage stage) {
         var scene = new Scene(pane, ENV.WIDTH, ENV.HEIGHT);
         initField(ENV.WIDTH / 2.0 - ENV.HEXAGON_RADIUS / 2.0, 30);
@@ -266,7 +269,7 @@ public class HexagonField extends Field {
     }
 
     /**
-     * Renders the entire field and contains an event listener for updates on the scene.
+     * Renders the entire field when a new game is started and contains an event listener for updates on the scene.
      * @param stage Stage used for potential redrawing.
      * @return      The scene for the stage for the pane.
      */

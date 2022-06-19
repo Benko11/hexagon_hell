@@ -4,12 +4,11 @@ import com.example.terrible_fate.Components.CustomButton;
 import com.example.terrible_fate.Components.CustomLabel;
 import com.example.terrible_fate.ENV;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 /**
- * End screen when the corruption has reached 70%
+ * End screen when the corruption has reached ENV.VICTORY value (presumed to be 0.7 or 70%)
  */
 public class EndGame {
     private boolean player1Wins;

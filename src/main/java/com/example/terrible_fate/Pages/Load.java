@@ -14,7 +14,15 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Scanner;
 
+/**
+ * Screen where user can load their previous saved files.
+ */
 public class Load {
+    /**
+     * Loads the screen for loading a save file and handles user selection of a particular save file.
+     * @param stage Stage used for potential redrawing.
+     * @return      The scene for the stage for the pane.
+     */
     public Scene render(Stage stage) {
         var pane = new Pane();
 
@@ -62,19 +70,16 @@ public class Load {
                     } else if (i == 1) {
                         sideLength = Integer.parseInt(currentLine);
                     } else if (i == 2) {
-                        System.out.println(currentLine);
                         var split = currentLine.split(",");
                         for (var item: split) {
                             player1Corruption.add(Integer.parseInt(item.trim()));
                         }
                     } else if (i == 3) {
-                        System.out.println(currentLine);
                         var split = currentLine.split(",");
                         for (var item: split) {
                             player2Corruption.add(Integer.parseInt(item.trim()));
                         }
                     } else if (i == 4) {
-                        System.out.println(currentLine);
                         var split = currentLine.split(",");
                         for (var item: split) {
                             stages.add(Integer.parseInt(item.trim()));
@@ -87,14 +92,6 @@ public class Load {
 
                     i++;
                 }
-
-                System.out.println("isHex: " + isHex);
-                System.out.println("sideLength: " + sideLength);
-                System.out.println("player1Corruption: " + player1Corruption);
-                System.out.println("player2Corruption: " + player2Corruption);
-                System.out.println("stages: " + stages);
-                System.out.println("player1Turn: " + player1Turn);
-                System.out.println("AIMode: " + AIMode);
 
                 if (isHex) {
                     stage.setScene(new HexagonField(sideLength, player1Corruption, player2Corruption, stages, player1Turn, AIMode).load(stage));

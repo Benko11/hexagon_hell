@@ -1,9 +1,6 @@
 package com.example.terrible_fate.Components;
 
 import javafx.scene.control.Button;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.paint.Color;
 
 /**
  * Wrapper class around the default buttons with added default styling and ease of use features.

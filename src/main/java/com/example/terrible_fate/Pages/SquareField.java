@@ -149,7 +149,7 @@ public class SquareField extends Field {
     }
 
     /**
-     * Renders the entire field
+     * Renders the entire field when a new game is started and contains an event listener for updates on the scene.
      * @param stage Stage used for potential redrawing.
      * @return      The scene for the stage for the pane.
      */
@@ -242,7 +242,11 @@ public class SquareField extends Field {
         return scene;
     }
 
-    @Override
+    /**
+     * Loads the field into a state that is described in a save file.
+     * @param stage Stage used for potential redrawing.
+     * @return      The scene for the stage for the pane.
+     */
     public Scene load(Stage stage) {
         var pane = new Pane(canvas);
 

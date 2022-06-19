@@ -3,6 +3,9 @@ package com.example.terrible_fate.Components;
 import com.example.terrible_fate.ENV;
 import javafx.scene.control.Label;
 
+/**
+ * Wrapper class around the default labels with added default styling and ease of use features.
+ */
 public class CustomLabel extends Label {
     /**
      * Creates a label that is ready to be displayed in the pane.
@@ -19,7 +22,7 @@ public class CustomLabel extends Label {
     }
 
     /**
-     * Creates a label that is ready to be displayed in the pane.
+     * Creates a label that is ready to be displayed in the pane and allows to specify the font size.
      * @param text       Text displayed in the label
      * @param hexColour  Colour of the label
      * @param posX       X coordinate of the label
